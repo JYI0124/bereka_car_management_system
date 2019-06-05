@@ -20,12 +20,6 @@ class ProfileEditPage extends StatefulWidget {
 class _ProfileEditPageState extends State<ProfileEditPage> {
   _ProfileEditPageState({this.userInfo});
   User userInfo;
-  String name;
-  String email;
-  String phone;
-  String lp;
-  String car_model;
-  String car_url;
 
   Future<File> _imageFile;
 
@@ -42,7 +36,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   pickImageFromGallery(ImageSource source) {
     setState(() {
       _imageFile = ImagePicker.pickImage(source: source);
-      car_url = _imageFile.toString();
+      userInfo.car_url = _imageFile.toString();
     });
   }
 
@@ -98,12 +92,18 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     return new Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
-        _imageFile == null
+      userInfo.car_url == null
             ?
         Container(
-            child: Image.network(default_url)
+            child: Image.network(default_url) // car_url이 없으면
         )
             :
+          _imageFile == null
+            ?
+        Container(
+            child: Image.network(userInfo.car_url),
+          )
+              :
         showImage(),
 
         Row(
@@ -135,7 +135,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                     hintStyle: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent)
                 ),
                 onChanged: (val){
-                  name = val;
+                  if(val != null)
+                    userInfo.name = val;
 //                  getName(name);
                 },
               ),
@@ -155,7 +156,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                     hintStyle: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent)
                 ),
                 onChanged: (val){
-                  email = val;
+                  if(val != null)
+                    userInfo.email = val;
                 },
               ),
             )
@@ -174,7 +176,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                     hintStyle: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent)
                 ),
                 onChanged: (val){
-                  phone = val;
+                  if(val != null)
+                    userInfo.phone = val;
                 },
               ),
             )
@@ -193,7 +196,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                     hintStyle: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent)
                 ),
                 onChanged: (val){
-                  lp = val;
+                  if(val != null)
+                    userInfo.lp = val;
                 },
               ),
             )
@@ -212,7 +216,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                     hintStyle: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent)
                 ),
                 onChanged: (val){
-                  car_model = val;
+                  if(val != null)
+                    userInfo.car_model = val;
                 },
               ),
             )
@@ -225,8 +230,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
               print('document name : ' + userInfo.reference.toString());
 
-              if(name != null)
-                userInfo.reference.updateData({'name' : name});
+             /* if(userInfo.name != null)
+                userInfo.reference.updateData({'name' : userInfo.name});
               else
                 userInfo.reference.updateData({'name' : userInfo.name});
               if(email != null)
@@ -248,23 +253,23 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               if(car_url != null)
                 userInfo.reference.updateData({'car_url' : _imageFile});
               else
-                userInfo.reference.updateData({'name' : userInfo.car_url});
+                userInfo.reference.updateData({'name' : userInfo.car_url});*/
 
-              /*await Firestore.instance.runTransaction((Transaction transaction) async{
+             /* await Firestore.instance.runTransaction((Transaction transaction) async{
                   Firestore.instance.collection('userList').document(userInfo.reference.documentID).updateData(
-                      {'name' : name,
-                        'email' : email,
-                        'phone' : phone,
-                        'lp' : lp,
-                        'car_model' : car_model,
-                        'car_url' : _imageFile
+                      {'name' : userInfo.name,
+                        'email' : userInfo.email,
+                        'phone' : userInfo.phone,
+                        'lp' : userInfo.lp,
+                        'car_model' : userInfo.car_model,
+                        'car_url' : _imageFile == null ? userInfo.car_url : _imageFile,
                       }
                   );
                 }
               );*/
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (BuildContext context){
-                    return new ProfilePage(userInfo: userInfo, name : name, email : email, phone : phone, car_model : car_model, lp : lp, car_url : car_url);
+                    return new ProfilePage(userInfo: userInfo);
                   }));
               }
             )

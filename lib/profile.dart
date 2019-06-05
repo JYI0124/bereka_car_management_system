@@ -10,63 +10,24 @@ import 'profileEdit.dart';
 String default_url = "https://firebasestorage.googleapis.com/v0/b/final-f741c.appspot.com/o/default_img.png?alt=media&token=aa334b33-ff9b-4c55-9d59-73d2ae82d2f2";
 
 class ProfilePage extends StatefulWidget {
-  ProfilePage({this.userInfo, this.name, this.email, this.phone, this.car_model, this.lp, this.car_url});
+  ProfilePage({this.userInfo});
 
   User userInfo;
-  String name;
-  String email;
-  String phone;
-  String car_model;
-  String lp;
-  String car_url;
+
   @override
-  _ProfilePageState createState() => _ProfilePageState(userInfo: userInfo, name: name, email: email, phone: phone, car_model: car_model, lp: lp, car_url: car_url);
+  _ProfilePageState createState() => _ProfilePageState(userInfo: userInfo);
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  _ProfilePageState({this.userInfo, this.name, this.email, this.phone, this.car_model, this.lp, this.car_url});
+  _ProfilePageState({this.userInfo});
 
   User userInfo;
-  String name;
-  String email;
-  String phone;
-  String car_model;
-  String lp;
-  String car_url;
-
-//  File _imageFile;
-  Future<File> _imageFile;
 
   @override
   void initState(){
     super.initState();
   }
 
-  Widget showImage() {
-    return FutureBuilder<File>(
-      future: _imageFile,
-      builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
-        if (snapshot.connectionState == ConnectionState.done &&
-            snapshot.data != null) {
-          return Image.file(
-            snapshot.data,
-            width: 300,
-            height: 300,
-          );
-        } else if (snapshot.error != null) {
-          return const Text(
-            'Error Picking Image',
-            textAlign: TextAlign.center,
-          );
-        } else {
-          return const Text(
-            'No Image Selected',
-            textAlign: TextAlign.center,
-          );
-        }
-      },
-    );
-  }
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
@@ -105,31 +66,33 @@ class _ProfilePageState extends State<ProfilePage> {
     return new Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
-        _imageFile == null
+        userInfo.car_url == null
             ?
         Container(
             child: Image.network(default_url)
         )
             :
-        showImage(),
+        Container(
+            child: Image.network(userInfo.car_url),
+        ),
 
-        new Text("Name : " + name, style: TextStyle(fontSize: 20),),
-
-        new SizedBox(height: 12.0),
-
-        new Text("Email : " + email, style: TextStyle(fontSize: 20),),
+        new Text(userInfo.name == null ? "" : "Name : " +  userInfo.name, style: TextStyle(fontSize: 20),),
 
         new SizedBox(height: 12.0),
 
-        new Text("Phone \# : " + phone, style: TextStyle(fontSize: 20),),
+        new Text(userInfo.email == null ? "" : "Email : " +  userInfo.email, style: TextStyle(fontSize: 20),),
 
         new SizedBox(height: 12.0),
 
-        new Text("Car Model : " + car_model, style: TextStyle(fontSize: 20),),
+        new Text(userInfo.phone == null ? "" : "Phone \# : " +  userInfo.phone, style: TextStyle(fontSize: 20),),
 
         new SizedBox(height: 12.0),
 
-        new Text("License Plate \#" + lp, style: TextStyle(fontSize: 20),),
+        new Text(userInfo.car_model == null ? "" : "Car Model : " +  userInfo.car_model, style: TextStyle(fontSize: 20),),
+
+        new SizedBox(height: 12.0),
+
+        new Text(userInfo.lp == null ? "" : "License Plate \#" + userInfo.lp, style: TextStyle(fontSize: 20),),
 
       ],
     );

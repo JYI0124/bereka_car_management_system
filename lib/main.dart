@@ -18,11 +18,10 @@ void main() => runApp(MyApp());
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 final GoogleSignIn _googleSignIn = GoogleSignIn();
-bool _log_stat = false;
 String uid;
 FirebaseUser user;
 String default_url = "https://firebasestorage.googleapis.com/v0/b/final-f741c.appspot.com/o/default_img.png?alt=media&token=aa334b33-ff9b-4c55-9d59-73d2ae82d2f2";
-
+bool _success;
 
 class DrawerItem {
   String title;
@@ -61,9 +60,7 @@ class _HomePageState extends State<HomePage> {
 
   PageController _pageController;
   int currentPage = 1;
-  bool _success = false;
   String _userID;
-//  bool _log_stat = false;
   File _imageFile;
   User corr_user;
   List<User> users;
@@ -73,6 +70,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState(){
     super.initState();
+    _success = false;
     _pageController = PageController(
       initialPage: currentPage,
       keepPage: false,
@@ -90,7 +88,7 @@ class _HomePageState extends State<HomePage> {
       } else if(index == 1) {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => RepairPage()),
+          MaterialPageRoute(builder: (context) => RepairPage()), //수리 견적서
         );
       } else if(index == 2) {
         Navigator.push(
@@ -111,23 +109,8 @@ class _HomePageState extends State<HomePage> {
       _selectedDrawerIndex = 0;
     });
   }
-
-
-/*  _showLogInSnackBar(){
-    if(_log_stat == true){
-      print('logged in');
-      final snackBar = new SnackBar(
-        content: new Text("Successfully logged in"),
-      );
-      _scaffoldkey.currentState.showSnackBar(snackBar);
-    }
-  }*/
-
-
-
   @override
   Widget build(BuildContext context) {
-
 
     drawerOptions = <Widget>[];
     for (var i = 1; i < widget.drawerItems.length; i++) {
@@ -153,15 +136,13 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: Icon(Icons.alarm),
             onPressed: () async {
-             if(_log_stat == true){
-               print("alarm pressed");
-               _signOut();
-              setState((){
-                _log_stat = false;
-                _success = false;
-              });
-//               _showLogOutSnackBar();
-             }
+              if(_success == true){
+                print("alarm pressed");
+                _signOut();
+                setState((){
+                  _success = false;
+                });
+              }
 
 
             },
@@ -182,13 +163,14 @@ class _HomePageState extends State<HomePage> {
 
                 _showLoginDialog();
                 setState(() {
-                  _log_stat = true;
                   _success = true;
-
-
                 });
-                user = await _auth.currentUser();
-                print('logged uid : ' + user.uid);
+                /*user = await _auth.currentUser();
+//                print('user photoUrl: ' + user.photoUrl);
+                print('user uid : ' + user.uid);
+                print('user email : ' + user.email);*/
+
+//                print('logged uid : ' + user.uid);
 
                 /*Future<QuerySnapshot> snapshot= Firestore.instance.collection('userList').getDocuments();
                 users = new List<User>();
@@ -326,9 +308,10 @@ class _HomePageState extends State<HomePage> {
     print('_signOut method logged out');
 
     setState(() {
-      _log_stat = false;
       _success = false;
     });
+
+    print(_success);
   }
 
   void _signInWithGoogle() async {
@@ -339,7 +322,7 @@ class _HomePageState extends State<HomePage> {
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
-    FirebaseUser user = await _auth.signInWithCredential(credential);
+    user = await _auth.signInWithCredential(credential);
     assert(user.email != null);
     assert(user.displayName != null);
     assert(!user.isAnonymous);
@@ -350,7 +333,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       if (user != null) {
         _success = true;
-        _userID = user.uid;
+
       } else {
         _success = false;
       }
@@ -365,7 +348,7 @@ class _HomePageState extends State<HomePage> {
   void _showLoginDialog(){
     showDialog(
         context: context,
-        builder: (BuildContext context){
+        builder: (BuildContext context) {
           return AlertDialog(
             title: new Container(
               height: 100,
@@ -374,9 +357,9 @@ class _HomePageState extends State<HomePage> {
               child: Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Container(
-                    height:50,
-                    width: double.infinity,
-                    child: _GoogleSignInSection()
+                      height: 50,
+                      width: double.infinity,
+                      child: _GoogleSignInSection()
                   )
               ),
             ),
@@ -419,36 +402,40 @@ class _HomePageState extends State<HomePage> {
             currentAccountPicture: new CircleAvatar(
               backgroundColor: Colors.cyan,
               child: new Image.network(
-                  user == null ? "" : user.photoUrl,
+                user == null ? "" : user.photoUrl,
                 fit: BoxFit.cover,
               ),
             ),
-              accountName: Text("Pages", style: TextStyle(fontSize: 20),), accountEmail: Text(user == null ? "" : user.email.toString()),
+            accountName: Text("Pages", style: TextStyle(fontSize: 20),), accountEmail: Text(user == null ? "" : user.email.toString()),
             onDetailsPressed: () async {
               print('profile setting');
 
-              Future<QuerySnapshot> snapshot= Firestore.instance.collection('userList').getDocuments();
-              snapshot.then((val) {
+              if(user != null){
+                Future<QuerySnapshot> snapshot= Firestore.instance.collection('userList').getDocuments();
+                snapshot.then((val) {
 //                List<User> _users = List<User>();
 
-                List<DocumentSnapshot> documents = val.documents;
-                for(DocumentSnapshot sh in documents) {
-                  User _user = User.fromSnapshot(sh);
-                  print(_user.name);
-                  if(user.uid == _user.uid){
+                  List<DocumentSnapshot> documents = val.documents;
+                  for(DocumentSnapshot sh in documents) {
+                    User _user = User.fromSnapshot(sh);
+                    print(_user.name);
+                    if(user.uid == _user.uid){
                       corr_user = _user;
+                    }
                   }
-                }
-                print(corr_user.name);
-                if(corr_user.name == null){
-                  Navigator.push(context,MaterialPageRoute(builder: (context) => SignupPage()),);
-                }
+                  print(corr_user.name);
+                  if(corr_user.name == null){
+                    Navigator.push(context,MaterialPageRoute(builder: (context) => SignupPage()),);
+                  }
 
-                else{
-                  Navigator.push(context,MaterialPageRoute(builder: (context) => ProfilePage(userInfo: corr_user, name: corr_user.name, email: corr_user.email, phone: corr_user.phone, car_model: corr_user.car_model, lp: corr_user.lp, car_url: corr_user.car_url)));
-                }
+                  else{
+                    print('corr_user name: ' + corr_user.name);
+                    print('car_url :' + corr_user.car_url);
+                    Navigator.push(context,MaterialPageRoute(builder: (context) => ProfilePage(userInfo: corr_user)));
+                  }
 
-              });
+                });
+              }
             },
 
           ),
@@ -466,52 +453,36 @@ class _GoogleSignInSection extends StatefulWidget {
 }
 
 class _GoogleSignInSectionState extends State<_GoogleSignInSection> {
-  bool _success;
-  String _userID;
-  final GlobalKey<ScaffoldState> _scaffoldkey = new GlobalKey<ScaffoldState>();
-
   @override
   Widget build(BuildContext context) {
     return Column(
-        children: <Widget>[
-          Container(
-            height: 50,
+      children: <Widget>[
+        Container(
+          height: 50,
 //            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            alignment: Alignment.center,
-            child: RaisedButton(
-              onPressed: () async {
-                _signInWithGoogle();
-              },
-              child:Padding(
-                padding: const EdgeInsets.fromLTRB(50, 0, 0, 0),
-                child: Row(
-                  children: <Widget>[
-                    Icon(Icons.assignment_ind),
-                    Center(
-                      child: Text('Sign in Google', style: TextStyle(color: Colors.white)),
-                    )
-                  ],
-                ),
+          padding: const EdgeInsets.symmetric(vertical: 16.0),
+          alignment: Alignment.center,
+          child: RaisedButton(
+            onPressed: () async {
+              _signInWithGoogle();
+            },
+            child:Padding(
+              padding: const EdgeInsets.fromLTRB(50, 0, 50, 0),
+              child: Row(
+                children: <Widget>[
+                  Icon(Icons.assignment_ind),
+                  Center(
+                    child: Text('Sign in Google', style: TextStyle(color: Colors.white)),
+                  )
+                ],
               ),
+            ),
 
-              color: Colors.redAccent,
-            ),
+            color: Colors.redAccent,
           ),
-          /*Container(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              _success == null
-                  ? ''
-                  : (_success
-                  ? 'Successfully signed in, uid: ' + _userID
-                  : 'Sign in failed'),
-              style: TextStyle(color: Colors.red),
-            ),
-          )*/
-        ],
-      );
+        ),
+      ],
+    );
 
   }
 
@@ -524,24 +495,23 @@ class _GoogleSignInSectionState extends State<_GoogleSignInSection> {
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
-    final FirebaseUser user = await _auth.signInWithCredential(credential);
+    user = await _auth.signInWithCredential(credential);
     assert(user.email != null);
     assert(user.displayName != null);
     assert(!user.isAnonymous);
     assert(await user.getIdToken() != null);
 
-    final FirebaseUser currentUser = await _auth.currentUser();
+    FirebaseUser currentUser = await _auth.currentUser();
     assert(user.uid == currentUser.uid);
     setState(() {
       if (user != null) {
         _success = true;
-        _userID = user.uid;
       } else {
         _success = false;
       }
 
       if(_success){
-      Navigator.pop(context);
+        Navigator.pop(context);
       }
     });
   }

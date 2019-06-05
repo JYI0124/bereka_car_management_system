@@ -1,14 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 class User {
-  final String name;
-  final String car_model;
+  String name;
+  String car_model;
   String car_url;
-  final String email;
+  String email;
 
-  final String lp;
+  String lp;
   final String password;
   final String uid;
-  final String phone;
+  String phone;
   List<String> clients;
 
   final DocumentReference reference;
